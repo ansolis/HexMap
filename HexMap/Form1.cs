@@ -12,27 +12,52 @@ namespace HexMap
 {
     public partial class Form1 : Form
     {
+        private Bitmap buffer;
+        private int lastColorUsed = 0;
+
         public Form1()
         {
             InitializeComponent();
-            //SetStyle(ControlStyles.ResizeRedraw, true);
+
+            pictureBox1.Height = 10;
+
+            buffer = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+            Graphics g = System.Drawing.Graphics.FromImage(buffer);
+            Brush blackBrush = new SolidBrush(Color.Black);
+            lastColorUsed = Color.Black.ToArgb();
+            g.FillRectangle(blackBrush, new Rectangle(0, 0, buffer.Width, buffer.Height));
+            pictureBox1.Image = buffer;
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            ////base.OnPaint(e);
-            //System.Drawing.Pen myPen = new System.Drawing.Pen(Color.Aqua);
-            //e.Graphics.DrawRectangle(myPen, new Rectangle(this.Location.X + 5,
-            //                                              this.Location.Y + 5,
-            //                                              this.Location.X + 10,
-            //                                              this.Location.Y + 10));
+        }
 
-            var p = sender as Panel;
-            var g = e.Graphics;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            int oldBufferSize = buffer.Height;
+            
+            if (buffer == null)
+            {
+                buffer = new Bitmap(pictureBox1.Width, 30);
+            }
+            else
+            {
+                Bitmap newBuffer = new Bitmap(buffer.Width, buffer.Height + 10);
+                using (Graphics bufferGrph = Graphics.FromImage(newBuffer))
+                    bufferGrph.DrawImageUnscaled(buffer, Point.Empty);
+                buffer = newBuffer;
+            }
 
-            Brush brush = new SolidBrush(Color.DarkGreen);
-            g.FillRectangle(new SolidBrush(Color.Black), p.DisplayRectangle);
-            g.FillRectangle(brush, new Rectangle(5, 5, 15, 15));
+            pictureBox1.Height = buffer.Height;
+
+            Graphics g = System.Drawing.Graphics.FromImage(buffer);
+            lastColorUsed += 20;
+            Brush brush = new SolidBrush(Color.FromArgb(lastColorUsed));
+            g.FillRectangle(brush, new Rectangle(0, oldBufferSize, buffer.Width, 10));
+
+            pictureBox1.Image = buffer;
+            pictureBox1.Refresh();
         }
     }
 }

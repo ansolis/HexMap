@@ -47,10 +47,11 @@ namespace HexMap
         {
             LoadLine();
 
-            int squareSize = 10;
-            int width = pictureBox1.Width;
-            int height = ((int)map.Keys.Last() / (width / squareSize)) * squareSize;
-            buffer = new Bitmap(pictureBox1.Width, height);
+            int widthSquares = pictureBox1.Width / SQUARE_SIZE;
+            int width = widthSquares * SQUARE_SIZE;
+            int heightSquares = ((int)map.Keys.Last() / widthSquares) + 1;
+            int height = heightSquares * SQUARE_SIZE;
+            buffer = new Bitmap(width, height);
             pictureBox1.Height = height;
             Graphics g = System.Drawing.Graphics.FromImage(buffer);
             Brush yellowBrush = new SolidBrush(Color.Yellow);
@@ -59,14 +60,14 @@ namespace HexMap
             foreach (uint key in map.Keys)
             {
                 // TODO:  Fix position calculation
-                g.FillRectangle(blackBrush, new Rectangle((int)(key * squareSize) % width,
-                                                          (int)(key * squareSize) / width,
-                                                          squareSize, 
-                                                          squareSize));
-                g.FillRectangle(yellowBrush, new Rectangle((int)(key * squareSize) % width,
-                                                           (int)(key * squareSize) / width,
-                                                           squareSize - SQUARE_MARGIN,
-                                                           squareSize - SQUARE_MARGIN));
+                g.FillRectangle(blackBrush, new Rectangle((int)(key % widthSquares) * SQUARE_SIZE,
+                                                          (int)(key / widthSquares) * SQUARE_SIZE,
+                                                          SQUARE_SIZE,
+                                                          SQUARE_SIZE));
+                g.FillRectangle(yellowBrush, new Rectangle((int)(key % widthSquares) * SQUARE_SIZE,
+                                                           (int)(key / widthSquares) * SQUARE_SIZE,
+                                                           SQUARE_SIZE - SQUARE_MARGIN,
+                                                           SQUARE_SIZE - SQUARE_MARGIN));
             }
 
             pictureBox1.Image = buffer;

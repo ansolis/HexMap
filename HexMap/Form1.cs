@@ -18,6 +18,8 @@ namespace HexMap
         private SortedDictionary<uint, Byte> map = new SortedDictionary<uint, Byte>();
         private const int SQUARE_SIZE = 8;
         private const int SQUARE_MARGIN = 2;
+        private const uint INVALID_INDEX = 0xFFFFFFFF;
+        private uint indexSelected = INVALID_INDEX;
 
         public Form1()
         {
@@ -47,30 +49,8 @@ namespace HexMap
         {
             LoadLine();
 
-            int widthSquares = pictureBox1.Width / SQUARE_SIZE;
-            int width = widthSquares * SQUARE_SIZE;
-            int heightSquares = ((int)map.Keys.Last() / widthSquares) + 1;
-            int height = heightSquares * SQUARE_SIZE;
-            buffer = new Bitmap(width, height);
-            pictureBox1.Height = height;
-            Graphics g = System.Drawing.Graphics.FromImage(buffer);
-            Brush yellowBrush = new SolidBrush(Color.Yellow);
-            Brush blackBrush = new SolidBrush(Color.Black);
+            DrawHexImage();
 
-            foreach (uint key in map.Keys)
-            {
-                // TODO:  Fix position calculation
-                g.FillRectangle(blackBrush, new Rectangle((int)(key % widthSquares) * SQUARE_SIZE,
-                                                          (int)(key / widthSquares) * SQUARE_SIZE,
-                                                          SQUARE_SIZE,
-                                                          SQUARE_SIZE));
-                g.FillRectangle(yellowBrush, new Rectangle((int)(key % widthSquares) * SQUARE_SIZE,
-                                                           (int)(key / widthSquares) * SQUARE_SIZE,
-                                                           SQUARE_SIZE - SQUARE_MARGIN,
-                                                           SQUARE_SIZE - SQUARE_MARGIN));
-            }
-
-            pictureBox1.Image = buffer;
 
 
             //int oldBufferSize = buffer.Height;
@@ -113,8 +93,6 @@ namespace HexMap
 
             //pictureBox1.Image = buffer;
             ////pictureBox1.Refresh();
-
-
         }
 
         private void LoadLine()
@@ -154,16 +132,78 @@ namespace HexMap
             textBox1.Text = ((e.X) / SQUARE_SIZE).ToString();
             textBox2.Text = ((e.Y) / SQUARE_SIZE).ToString();
 
-            uint index = (uint)(((buffer.Width / SQUARE_SIZE) * SQUARE_SIZE - 1) * e.Y + e.X) / SQUARE_SIZE / SQUARE_SIZE;
+            uint index = (uint)(((e.Y/SQUARE_SIZE) * buffer.Width) / SQUARE_SIZE + e.X / SQUARE_SIZE);
             textBox3.Text = index.ToString();
-            if (map.Keys.Contains(index))
+
+            if (buffer != null)
             {
-                textBox4.Text = map[index].ToString();
+                if (map.Keys.Contains(index))
+                {
+                    textBox4.Text = map[index].ToString();
+                }
+                else
+                {
+                    textBox4.Text = string.Empty;
+                }
+
+
+                //Bitmap newBuffer = new Bitmap(buffer);
+                //using (Graphics bufferGrph = Graphics.FromImage(newBuffer))
+                //    bufferGrph.DrawImageUnscaled(buffer, Point.Empty);
+                //buffer = newBuffer;
+                //pictureBox1.Image = buffer;
+
+                Graphics g = Graphics.FromImage(buffer);
+                Brush blueBrush = new SolidBrush(Color.Blue);
+                int widthSquares = buffer.Width / SQUARE_SIZE;
+
+                if (indexSelected != INVALID_INDEX)
+                {
+                    Brush yellowBrush = new SolidBrush(Color.Yellow);
+                    Brush blackBrush = new SolidBrush(Color.Black);
+                    g.FillRectangle(blackBrush, new Rectangle((int)(indexSelected % widthSquares) * SQUARE_SIZE,
+                                                              (int)(indexSelected / widthSquares) * SQUARE_SIZE,
+                                                              SQUARE_SIZE,
+                                                              SQUARE_SIZE));
+                    g.FillRectangle(yellowBrush, new Rectangle((int)(indexSelected % widthSquares) * SQUARE_SIZE,
+                                                               (int)(indexSelected / widthSquares) * SQUARE_SIZE,
+                                                               SQUARE_SIZE - SQUARE_MARGIN,
+                                                               SQUARE_SIZE - SQUARE_MARGIN));
+                }
+                indexSelected = index;
+                g.FillRectangle(blueBrush, new Rectangle((int)(index % widthSquares) * SQUARE_SIZE,
+                                                         (int)(index / widthSquares) * SQUARE_SIZE,
+                                                         SQUARE_SIZE,
+                                                         SQUARE_SIZE));
+                pictureBox1.Image = buffer;
             }
-            else
+        }
+
+        private void DrawHexImage()
+        {
+            int widthSquares = (pictureBox1.Width - 15) / SQUARE_SIZE;
+            int width = widthSquares * SQUARE_SIZE;
+            int heightSquares = ((int)map.Keys.Last() / widthSquares) + 1;
+            int height = heightSquares * SQUARE_SIZE;
+            buffer = new Bitmap(width, height);
+            pictureBox1.Height = height;
+            Graphics g = Graphics.FromImage(buffer);
+            Brush yellowBrush = new SolidBrush(Color.Yellow);
+            Brush blackBrush = new SolidBrush(Color.Black);
+
+            foreach (uint key in map.Keys)
             {
-                textBox4.Text = string.Empty;
+                g.FillRectangle(blackBrush, new Rectangle((int)(key % widthSquares) * SQUARE_SIZE,
+                                                          (int)(key / widthSquares) * SQUARE_SIZE,
+                                                          SQUARE_SIZE,
+                                                          SQUARE_SIZE));
+                g.FillRectangle(yellowBrush, new Rectangle((int)(key % widthSquares) * SQUARE_SIZE,
+                                                           (int)(key / widthSquares) * SQUARE_SIZE,
+                                                           SQUARE_SIZE - SQUARE_MARGIN,
+                                                           SQUARE_SIZE - SQUARE_MARGIN));
             }
+
+            pictureBox1.Image = buffer;
         }
     }
 }
